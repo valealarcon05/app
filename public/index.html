@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valentine Cocina</title>
+    <!--Font-->
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <!--estilos-->
+    <link rel="stylesheet" href="/assets/styles.css">
+    <!--Favicon-->
+    <link rel="icon" href="assets/icons/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="assets/icons/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="assets/icons/favicon.png">
+</head>
+<body>
+    <!-- Sección de inicio de sesión -->
+    <section id="loginSection">
+        <h1>Valentine Cocina</h1>
+        <form id="loginForm">
+            <p>Nombre de usuario</p>
+            <input type="text" id="nombre" placeholder="Nombre de usuario" required>
+            <p>Contraseña</p>
+            <input type="password" id="contraseña" placeholder="Contraseña" required>
+            <button type="submit">Iniciar Sesión</button>
+        </form>
+    </section>
+
+    <!-- Sección del panel de usuario -->
+    <section id="userSection" style="display: none;">
+        <nav>
+            <h2 id="welcomeMessage"></h2>
+            <button id="addProductionButton">Agregar Producción</button>
+            <button id="addSaleButton">Agregar Venta</button>
+            <button id="logoutButton">Cerrar Sesión</button>
+        </nav>
+        
+                <!-- Tabla de tareas -->
+                <h3>Tareas Asignadas</h3>
+                <table id="taskTable">
+                    <thead>
+                        <tr>
+                            <th>Nombre de Tarea</th>
+                            <th>Usuario</th>
+                            <th>Observaciones</th>
+                            <th>Día creada</th>
+                        </tr>
+                    </thead>
+                    <tbody id="taskTableBody"></tbody>
+                        <!-- Tareas dinámicas aquí -->
+                    </tbody>
+                </table>
+
+                <!-- Tabla de producción -->
+                <h3>Producción</h3>
+                <table id="productionTable">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Sector</th>
+                            <th>Fecha y Hora</th>
+                            <th>Cantidad</th>
+                            <th>Unidad</th>
+                            <th>Usuario</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Datos dinámicos aquí -->
+                    </tbody>
+                </table>
+
+                <!-- Tabla de ventas -->
+                <h3>Ventas</h3>
+                <table id="salesTable">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Sector</th>
+                            <th>Fecha y Hora</th>
+                            <th>Precio</th>
+                            <th>Método de Pago</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Datos dinámicos aquí -->
+                    </tbody>
+                </table>
+
+                <!-- Tabla de sesiones -->
+                <h3>Sesiones</h3>
+                <table id="sessionsTable">
+                    <thead>
+                        <tr>
+                            <th>Ingreso</th>
+                            <th>Egreso</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Datos dinámicos aquí -->
+                    </tbody>
+                </table>
+
+                <!-- Modal de Producción -->
+            <div id="productionModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <h3>Agregar Producción</h3>
+                    <form id="productionForm">
+                        <label for="sector">Sector:</label>
+                        <select id="sector" required>
+                            <option value="congelados">Congelados</option>
+                            <option value="kiosko">Kiosko</option>
+                            <option value="parrilla">Parrilla</option>
+                            <option value="cantina">Cantina</option>
+                        </select>
+                        <label for="nombreProducto">Nombre del Producto:</label>
+                        <input type="text" id="nombreProducto" required>
+                        <label for="cantidad">Cantidad:</label>
+                        <input type="number" id="cantidad" required>
+                        <label for="unidad">Unidad:</label>
+                        <select id="unidad" required>
+                            <option value="kg">Kg</option>
+                            <option value="g">Gramos</option>
+                            <option value="litro">Litro</option>
+                            <option value="ml">Mililitros</option>
+                            <option value="unidad">Unidad</option>
+                            <option value="otro">Otro</option>
+                        </select>
+                        <button type="submit">Aceptar</button>
+                        <button type="button" id="closeProductionModal">Cerrar</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal de Ventas -->
+            <div id="salesModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <h3>Agregar Venta</h3>
+                    <form id="salesForm">
+                        <label for="sectorVenta">Sector:</label>
+                        <select id="sectorVenta" required>
+                            <option value="congelados">Congelados</option>
+                            <option value="kiosko">Kiosko</option>
+                            <option value="parrilla">Parrilla</option>
+                            <option value="cantina">Cantina</option>
+                        </select>
+                        <label for="nombreProductoVenta">Nombre del Producto:</label>
+                        <select id="nombreProductoVenta" required>
+                            <!-- Opciones dinámicas de productos se cargarán aquí -->
+                        </select>
+                        <label for="precioVenta">Precio:</label>
+                        <input type="text" id="precioVenta" readonly>
+                        <label for="cantidadVenta">Cantidad:</label>
+                        <input type="number" id="cantidadVenta" required>
+                        <label for="metodoPago">Método de Pago:</label>
+                        <select id="metodoPago" required>
+                            <option value="efectivo">Efectivo</option>
+                            <option value="tarjeta">Tarjeta</option>
+                            <option value="billetera_virtual">Billetera Virtual</option>
+                        </select>
+                        <button type="submitSalesForm">Aceptar</button>
+                        <button type="button" id="closeSalesModal">Cerrar</button>
+                    </form>
+                </div>
+            </div>
+    </section>
+
+<!-- Sección del panel de dueño -->
+    <section id="ownerSection" style="display: none;">
+        <nav>
+            <h2 id="welcomeOwnerMessage"></h2>
+            <h2>Panel de Administrador</h2>
+            <button id="addUserButtonAdmin">Agregar Usuario</button>
+            <button id="addTaskButtonAdmin">Crear Tarea</button>
+            <button id="addProductButtonAdmin">Agregar Producto</button>
+            <button id="addRawMaterialButtonAdmin">Agregar Materia Prima</button>
+            <button id="logoutButtonAdmin">Cerrar Sesión</button>
+        </nav>
+        
+        <!-- Tabla de Producción -->
+        <h3>Producción</h3>
+        <table id="adminProductionTable">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Usuario</th>
+                    <th>Fecha y Hora</th>
+                    <th>Cantidad</th>
+                    <th>Unidad</th>
+                    <th>Sector</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Datos dinámicos aquí -->
+            </tbody>
+        </table>
+
+        <!-- Tabla de Productos-->
+        <h3>Productos</h3>
+        <table id="adminProductsTable">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Precio Unitario</th>
+                    <th>Precio Venta</th>
+                    <th>Cantidad Disponible</th>
+                    <th>Unidad</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Las filas generadas aparecerán aquí -->
+            </tbody>
+        </table>
+
+        <!-- Tabla de Ventas -->
+        <h3>Ventas</h3>
+        <table id="adminSalesTable">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Usuario</th>
+                    <th>Fecha y Hora</th>
+                    <th>Sector</th>
+                    <th>Precio</th>
+                    <th>Metodo de pago</th>
+                    <th>Cantidad</th>
+                    <th>Total</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Datos dinámicos aquí -->
+            </tbody>
+        </table>
+
+        <!-- Tabla de Materia Prima -->
+        <h3>Materia Prima</h3>
+        <table id="adminRawMaterialTable">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Cantidad</th>
+                    <th>Unidad</th>
+                    <th>precio de compra</th>
+                    <th>Fecha y Hora</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Datos dinámicos aquí -->
+            </tbody>
+        </table>
+
+        <!-- Tabla de Usuarios -->
+        <h3>Usuarios</h3>
+        <table id="adminUsersTable">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Último Ingreso</th>
+                    <th>Último Egreso</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Datos dinámicos aquí -->
+            </tbody>
+        </table>
+
+        <!-- Tabla de Empleados -->
+        <h3>Empleados</h3>
+        <table id="adminEmployeesTable">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Sector</th> <!--Editar en db y en scripts.js-->
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Datos dinámicos aquí -->
+            </tbody>
+        </table>
+    
+            <!-- Formulario dinamico Usuarios-->
+            <section id="addUserFormSection" style="display: none;">
+                <h3>Agregar Usuario</h3>
+                <form id="addUserForm">
+                    <label for="nombreUsuario">Nombre:</label>
+                    <input type="text" id="nombreUsuario" required>
+                    <label for="rolUsuario">Rol:</label>
+                    <select id="rolUsuario" required>
+                        <option value="empleado">Empleado</option>
+                        <option value="dueño">Administrador</option>
+                    </select>
+                    <label for="contraseñaUsuario">Contraseña:</label>
+                    <input type="password" id="contraseñaUsuario" required>
+                    <button type="submit">Agregar</button>
+                    <button type="button" id="cancelAddUserForm">Cancelar</button>
+                </form>
+            </section>
+            <!-- Formulario para agregar tareas -->
+            <section id="taskFormSection" style="display: none;">
+                <h3>Crear Tarea</h3>
+                <form id="taskForm">
+                    <label for="taskName">Nombre de la Tarea:</label>
+                    <input type="text" id="taskName" required>
+                    <label for="taskUser">Usuario:</label>
+                    <select id="taskUser" required>
+                        <!-- Opciones cargadas dinámicamente -->
+                    </select>
+                    <label for="taskDate">Día:</label>
+                    <input type="date" id="taskDate" required>
+                    <label for="taskNotes">Observaciones:</label>
+                    <textarea id="taskNotes"></textarea>
+                    <button type="submit">Crear</button>
+                    <button type="button" id="cancelTaskForm">Cancelar</button>
+                </form>
+            </section>
+            <!-- Formulario Agregar Producto -->
+            <section id="addProductFormSection" style="display: none;">
+                <h3>Agregar Producto</h3>
+                <form id="addProductForm">
+                    <label for="nombreProductoNuevo">Nombre del Producto:</label>
+                    <input type="text" id="nombreProductoNuevo" required>
+                    <label for="sectorProducto">Sector:</label>
+                    <select id="sectorProducto" required>
+                        <option value="congelados">Congelados</option>
+                        <option value="kiosko">Kiosko</option>
+                        <option value="parrilla">Parrilla</option>
+                        <option value="cantina">Cantina</option>
+                    </select>
+                    <label for="cantidad_disponibleProducto">Cantidad Disponible:</label>
+                    <input type="number" id="cantidad_disponibleProducto" required>
+                    <label for="unidadProducto">Unidad:</label>
+                    <select id="unidadProducto" required>
+                        <option value="kg">Kg</option>
+                        <option value="g">Gramos</option>
+                        <option value="litro">Litro</option>
+                        <option value="ml">Mililitros</option>
+                        <option value="unidad">Unidad</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                    <label for="precioUnitarioProducto">Precio Unitario:</label>
+                    <input type="number" id="precioUnitarioProducto" step="0.01" required>
+                    <label for="precioVentaProducto">Precio de Venta:</label>
+                    <input type="number" id="precioVentaProducto" step="0.01" required>
+                    <button type="submit">Agregar</button>
+                    <button type="button" id="cancelAddProductForm">Cancelar</button>
+                </form>
+            </section>
+            <!-- Formulario para agregar materia prima -->
+            <section id="addRawMaterialFormSection" style="display: none;">
+                <h3>Agregar Materia Prima</h3>
+                <form id="addRawMaterialForm">
+                    <label for="nombreMateriaPrima">Nombre de la Materia Prima:</label>
+                    <input type="text" id="nombreMateriaPrima" required>
+                    <label for="cantidadMateriaPrima">Cantidad:</label>
+                    <input type="number" id="cantidadMateriaPrima" required>
+                    <label for="unidadMateriaPrima">Unidad:</label>
+                    <select id="unidadMateriaPrima" required>
+                        <option value="kg">Kg</option>
+                        <option value="g">Gramos</option>
+                        <option value="litro">Litro</option>
+                        <option value="ml">Mililitros</option>
+                        <option value="unidad">Unidad</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                    <label for="precioCompraMateriaPrima">Precio de Compra:</label>
+                    <input type="number" id="precioCompraMateriaPrima" step="0.01" required>
+
+                    <button type="submit">Agregar</button>
+                    <button type="button" id="cancelAddRawMaterialForm">Cancelar</button>
+                </form>
+            </section>
+    </section>
+    <script src="./scripts.js"></script>
+</body>
+</html>
