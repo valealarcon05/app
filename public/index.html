@@ -192,8 +192,7 @@
                     <th>Cantidad</th>
                     <th>Unidad</th>
                     <th>Sector</th>
-                    <th>Acciones</th>
-                </tr>
+                <tr>
             </thead>
             <tbody>
                 <!-- Datos dinámicos aquí -->
@@ -392,73 +391,6 @@
                     </form>
                 </div>
             </div>
-
-                <!-- Modal Editar Producción -->
-                <div id="editProductionModal" class="modal" style="display: none;">
-                    <div class="modal-content">
-                        <h3>Editar Producción</h3>
-                        <form id="editProductionForm">
-                            <label for="editProduct">Producto:</label>
-                            <select id="editProduct" required>
-                            <!-- Opciones dinámicas de productos se cargarán aquí -->
-                            </select>
-                            <label for="editproductionUser">Usuario:</label>
-                            <select id="editproductionUser" required>
-                                <!-- Opciones cargadas dinámicamente -->
-                            </select>
-                            <label for="editQuantity">Cantidad:</label>
-                            <input type="number" id="editQuantity" required>
-                            <label for="editunidadProducto">Unidad:</label>
-                            <select id="editunidadProducto" required>
-                                <option value="kg">Kg</option>
-                                <option value="g">Gramos</option>
-                                <option value="litro">Litro</option>
-                                <option value="ml">Mililitros</option>
-                                <option value="unidad">Unidad</option>
-                                <option value="otro">Otro</option>
-                            </select>
-                            <label for="editsectorProducto">Sector:</label>
-                            <select id="editsectorProducto" required>
-                                <option value="congelados">Congelados</option>
-                                <option value="kiosko">Kiosko</option>
-                                <option value="parrilla">Parrilla</option>
-                                <option value="cantina">Cantina</option>
-                            </select>
-                            <button type="submit" id="save-production-button">Guardar Cambios</button>
-                            <button type="button" onclick="closeModal(modals.productionModal)" id="closeEditProductionModal">Cerrar</button>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Modal Editar Producto -->
-                <div id="editProductModal" class="modal" style="display: none;">
-                    <div class="modal-content">
-                        <h3>Editar Producto</h3>
-                        <form id="editProductForm">
-                            <label for="editProductP">Producto:</label>
-                            <select id="editProductP" required>
-                            <!-- Opciones dinámicas de productos se cargarán aquí -->
-                            </select>
-                            <label for="editProductUnitPrice">Precio Unitario:</label>
-                            <input type="number" id="editProductUnitPrice" step="0.01" required>
-                            <label for="editProductSalePrice">Precio Venta:</label>
-                            <input type="number" id="editProductSalePrice" step="0.01" required>
-                            <label for="editProductQuantity">Cantidad Disponible:</label>
-                            <input type="number" id="editProductQuantity" required>
-                            <label for="editunidadProductoP">Unidad:</label>
-                            <select id="editunidadProductoP" required>
-                                <option value="kg">Kg</option>
-                                <option value="g">Gramos</option>
-                                <option value="litro">Litro</option>
-                                <option value="ml">Mililitros</option>
-                                <option value="unidad">Unidad</option>
-                                <option value="otro">Otro</option>
-                            </select>
-                            <button type="submit">Guardar Cambios</button>
-                            <button type="button" id="closeEditProductModal">Cerrar</button>
-                        </form>
-                    </div>
-                </div>
     </section>
     <script src="./scripts1.js"></script>
 </body>

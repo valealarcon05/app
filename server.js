@@ -224,19 +224,6 @@ app.get('/api/produccion', (req, res) => {
     });
 });
 
-app.delete('/api/produccion/:id', (req, res) => {
-    const { id } = req.params;
-    console.log('ID recibido para eliminar producción:', id);
-    const query = `DELETE FROM Produccion WHERE id = ?`;
-    db.run(query, [id], function (err) {
-        if (err) {
-            console.error('Error al eliminar producción:', err.message);
-            return res.status(500).json({ error: 'Error al eliminar producción.' });
-        }
-        res.status(200).json({ message: 'Producción eliminada correctamente.' });
-    });
-});
-
 // **API: Obtener Producción por ID (Editar Producción)**
 // Eliminar un producto por su ID
 app.delete('/api/productos/:id', (req, res) => {
@@ -432,6 +419,48 @@ app.get('/api/productos', (req, res) => {
             return res.status(500).json({ error: 'Error al obtener productos.' });
         }
         res.json(rows);
+    });
+});
+
+// Ruta para obtener un producto por su ID
+app.get('/api/productos/:id', (req, res) => {
+    const { id } = req.params;
+
+    const query = 'SELECT * FROM productos WHERE id = ?';
+
+    db.get(query, [id], (err, product) => {
+        if (err) {
+            console.error('Error al obtener el producto:', err);
+            res.status(500).json({ error: 'Error al obtener el producto.' });
+        } else if (!product) {
+            res.status(404).json({ error: 'Producto no encontrado.' });
+        } else {
+            res.status(200).json(product);
+        }
+    });
+});
+
+// Ruta para actualizar el stock de un producto
+app.put('/api/productos/:id', (req, res) => {
+    const { id } = req.params;
+    const { cantidad_disponible } = req.body;
+
+    // Validar que los datos sean válidos
+    if (cantidad_disponible === undefined || cantidad_disponible < 0) {
+        return res.status(400).json({ error: 'La cantidad disponible debe ser un número válido.' });
+    }
+
+    const query = 'UPDATE productos SET cantidad_disponible = ? WHERE id = ?';
+
+    db.run(query, [cantidad_disponible, id], function (err) {
+        if (err) {
+            console.error('Error al actualizar el stock:', err);
+            res.status(500).json({ error: 'Error al actualizar el stock.' });
+        } else if (this.changes === 0) {
+            res.status(404).json({ error: 'Producto no encontrado.' });
+        } else {
+            res.status(200).json({ message: 'Stock actualizado correctamente.' });
+        }
     });
 });
 
@@ -642,20 +671,6 @@ app.post('/api/admin/productos', (req, res) => {
             return res.status(500).json({ error: 'Error al agregar producto.' });
         }
         res.status(200).json({ message: 'Producto agregado correctamente.' });
-    });
-});
-
-app.put('/api/productos/:id', (req, res) => {
-    const { id } = req.params;
-    const { cantidad_disponible } = req.body;
-
-    const query = `UPDATE Productos SET cantidad_disponible = ? WHERE id = ?`;
-    db.run(query, [cantidad_disponible, id], function (err) {
-        if (err) {
-            console.error('Error al actualizar producto:', err.message);
-            return res.status(500).json({ error: 'Error al actualizar producto.' });
-        }
-        res.status(200).json({ message: 'Producto actualizado correctamente.' });
     });
 });
 

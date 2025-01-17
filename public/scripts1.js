@@ -1,4 +1,84 @@
+const loadTableData = async (url, tableId, actionCallback) => {
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        const tableBody = document.querySelector(`${tableId} tbody`);
+        tableBody.innerHTML = data.map(actionCallback).join('');
+    } catch (error) {
+        console.error(`Error al cargar datos para ${tableId}:`, error);
+    }
+};
+// Función genérica para asignar eventos a botones de eliminación
+const setupDeleteButtons = (tableId, deleteCallback) => {
+    document.querySelectorAll(`${tableId} .delete-button`).forEach(button => {
+        button.addEventListener('click', async (e) => {
+            const id = e.target.dataset.id || e.target.closest('button').dataset.id;
+            if (id && confirm('¿Estás seguro de eliminar este elemento?')) {
+                await deleteCallback(id);
+            }
+        });
+    });
+};
+// Función genérica para eliminar un elemento
+const deleteItem = async (url, id, tableId) => {
+    try {
+        const response = await fetch(`${url}/${id}`, { method: 'DELETE' });
+        if (!response.ok) throw new Error('Error al eliminar el elemento.');
+        alert('Elemento eliminado correctamente.');
+        const row = document.querySelector(`${tableId} .delete-button[data-id="${id}"]`).closest('tr');
+        if (row) row.remove();
+    } catch (error) {
+        console.error('Error al eliminar el elemento:', error);
+    }
+};
+// Inicializar tablas y acciones
+const initTables = async () => {
+    // Cargar y configurar tabla de productos
+    await loadTableData('/api/admin/productos', '#adminProductsTable', (row) => `
+        <tr>
+            <td>${row.nombre}</td>
+            <td>${row.precio_unitario.toFixed(2)}</td>
+            <td>${row.precio_venta.toFixed(2)}</td>
+            <td>${row.cantidad_disponible}</td>
+            <td>${row.unidad}</td>
+            <td>
+                <button class="delete-button" data-id="${row.id}">Eliminar</button>
+            </td>
+        </tr>
+    `);
+    setupDeleteButtons('#adminProductsTable', (id) => deleteItem('/api/productos', id, '#adminProductsTable'));
+
+    // Cargar y configurar tabla de materia prima
+    await loadTableData('/api/admin/materia-prima', '#adminRawMaterialTable', (row) => `
+        <tr>
+            <td>${row.nombre}</td>
+            <td>${row.cantidad}</td>
+            <td>${row.unidad}</td>
+            <td>${row.precio_compra}</td>
+            <td>${row.fecha_hora}</td>
+            <td>
+                <button class="delete-button" data-id="${row.id}">Eliminar</button>
+            </td>
+        </tr>
+    `);
+    setupDeleteButtons('#adminRawMaterialTable', (id) => deleteItem('/api/materia-prima', id, '#adminRawMaterialTable'));
+
+    // Cargar y configurar tabla de empleados
+    await loadTableData('/api/admin/empleados', '#adminEmployeesTable', (row) => `
+        <tr>
+            <td>${row.nombre}</td>
+            <td>${row.sector}</td>
+            <td>
+                <button class="delete-button" data-id="${row.id}">Eliminar</button>
+            </td>
+        </tr>
+    `);
+    setupDeleteButtons('#adminEmployeesTable', (id) => deleteItem('/api/empleados', id, '#adminEmployeesTable'));
+};
+
+
 document.addEventListener('DOMContentLoaded', () => {
+    initTables();
     // Variables generales
     const userId = localStorage.getItem('id_usuario'); // ID del usuario logueado
     const modals = {
@@ -34,128 +114,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (closeButton) closeButton.addEventListener('click', () => closeModal(modals[modalKey]));
     });
 
-    const setupDeleteButtons = () => {
-    // Botones de eliminación en la tabla de producción
-    document.querySelectorAll('#adminProductionTable .delete-button').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const rowId = e.target.dataset.id;
-            deleteProduction(rowId);
-        });
-    });
-
-    // Botones de eliminación en la tabla de materia prima
-    document.querySelectorAll('#adminRawMaterialTable .delete-button').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const rowId = e.target.dataset.id;
-            deleteRawMaterial(rowId);
-        });
-    });
-
-    // Botones de eliminación en la tabla de productos
-    document.querySelectorAll('#adminProductsTable .delete-button').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const rowId = e.target.dataset.id;
-            deleteProducts(rowId);
-        });
-    });
-
-    // Botones de eliminación en la tabla de empleados (corregido el selector)
-    document.querySelectorAll('#adminEmployeesTable .delete-button').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const rowId = e.target.dataset.id;
-            deleteEmployees(rowId); // Nombre de la función corregido
-        });
-    });
-};
-
-    const deleteProduction = async (id) => {
-    if (!id) {
-        console.error('ID inválido para producción.');
-        return;
-    }
-    if (confirm('¿Estás seguro de eliminar esta producción?')) {
-        try {
-            const response = await fetch(`/api/produccion/${id}`, { method: 'DELETE' });
-
-            if (!response.ok) {
-                throw new Error('Error al eliminar producción.');
-            }
-
-            alert('Producción eliminada correctamente.');
-            const row = document.querySelector(`#adminProductionTable .delete-button[data-id="${id}"]`).closest('tr');
-            if (row) row.remove();
-        } catch (error) {
-            console.error('Error al eliminar producción:', error);
-        }
-    }
-    };
-
-    const deleteRawMaterial = async (id) => {
-    if (!id) {
-        console.error('ID inválido para materia prima.');
-        return;
-    }
-    if (confirm('¿Estás seguro de eliminar esta materia prima?')) {
-        try {
-            const response = await fetch(`/api/materia-prima/${id}`, { method: 'DELETE' });
-
-            if (!response.ok) {
-                throw new Error('Error al eliminar materia prima.');
-            }
-
-            alert('Materia prima eliminada correctamente.');
-            const row = document.querySelector(`#adminRawMaterialTable .delete-button[data-id="${id}"]`).closest('tr');
-            if (row) row.remove();
-        } catch (error) {
-            console.error('Error al eliminar materia prima:', error);
-        }
-    }
-    };
-
-    const deleteProducts = async (id) => {
-    if (!id) {
-        console.error('ID inválido para producto.');
-        return;
-    }
-    if (confirm('¿Estás seguro de eliminar este producto?')) {
-        try {
-            const response = await fetch(`/api/productos/${id}`, { method: 'DELETE' });
-
-            if (!response.ok) {
-                throw new Error('Error al eliminar producto.');
-            }
-
-            alert('Producto eliminado correctamente.');
-            const row = document.querySelector(`#adminProductsTable .delete-button[data-id="${id}"]`).closest('tr');
-            if (row) row.remove();
-        } catch (error) {
-            console.error('Error al eliminar producto:', error);
-        }
-    }
-    };
-
-    const deleteEmployees = async (id) => {
-    if (!id) {
-        console.error('ID inválido para empleado.');
-        return;
-    }
-    if (confirm('¿Estás seguro de eliminar este empleado?')) {
-        try {
-            const response = await fetch(`/api/empleados/${id}`, { method: 'DELETE' });
-
-            if (!response.ok) {
-                throw new Error('Error al eliminar empleado.');
-            }
-
-            alert('Empleado eliminado correctamente.');
-            const row = document.querySelector(`#adminEmployeesTable .delete-button[data-id="${id}"]`).closest('tr');
-            if (row) row.remove();
-        } catch (error) {
-            console.error('Error al eliminar empleado:', error);
-        }
-    }
-    };
-    
     // Inicio de sesión
     const loginForm = document.getElementById('loginForm');
     loginForm.addEventListener('submit', async (e) => {
@@ -220,6 +178,95 @@ document.addEventListener('DOMContentLoaded', () => {
 // Vincular la función al botón de cerrar sesión
 document.getElementById('logoutButton').addEventListener('click', logout);
 document.getElementById('logoutButtonAdmin').addEventListener('click', logout);
+
+const setupDeleteButtons = () => {
+    // Botones de eliminación en la tabla de materia prima
+    document.querySelectorAll('#adminRawMaterialTable .delete-button').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const rowId = e.target.dataset.id || e.target.closest('button').dataset.id;
+            if (rowId) {
+                deleteRawMaterial(rowId);
+            } else {
+                console.error('ID inválido para materia prima.');
+            }
+        });
+    });
+
+    // Botones de eliminación en la tabla de productos
+    document.querySelectorAll('#adminProductsTable .delete-button').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const rowId = e.target.dataset.id || e.target.closest('button').dataset.id;
+            if (rowId) {
+                deleteProducts(rowId);
+            } else {
+                console.error('ID inválido para producto.');
+            }
+        });
+    });
+
+    // Botones de eliminación en la tabla de empleados
+    document.querySelectorAll('#adminEmployeesTable .delete-button').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const rowId = e.target.dataset.id || e.target.closest('button').dataset.id;
+            if (rowId) {
+                deleteEmployees(rowId);
+            } else {
+                console.error('ID inválido para empleado.');
+            }
+        });
+    });
+};
+
+const deleteRawMaterial = async (id) => {
+    if (!id) {
+        console.error('ID inválido para materia prima.');
+        return;
+    }
+    if (confirm('¿Estás seguro de eliminar esta materia prima?')) {
+        try {
+            const response = await fetch(`/api/materia-prima/${id}`, { method: 'DELETE' });
+            if (!response.ok) throw new Error('Error al eliminar materia prima.');
+            alert('Materia prima eliminada correctamente.');
+            document.querySelector(`#adminRawMaterialTable .delete-button[data-id="${id}"]`).closest('tr').remove();
+        } catch (error) {
+            console.error('Error al eliminar materia prima:', error);
+        }
+    }
+};
+
+const deleteProducts = async (id) => {
+    if (!id) {
+        console.error('ID inválido para producto.');
+        return;
+    }
+    if (confirm('¿Estás seguro de eliminar este producto?')) {
+        try {
+            const response = await fetch(`/api/productos/${id}`, { method: 'DELETE' });
+            if (!response.ok) throw new Error('Error al eliminar producto.');
+            alert('Producto eliminado correctamente.');
+            document.querySelector(`#adminProductsTable .delete-button[data-id="${id}"]`).closest('tr').remove();
+        } catch (error) {
+            console.error('Error al eliminar producto:', error);
+        }
+    }
+};
+
+const deleteEmployees = async (id) => {
+    if (!id) {
+        console.error('ID inválido para empleado.');
+        return;
+    }
+    if (confirm('¿Estás seguro de eliminar este empleado?')) {
+        try {
+            const response = await fetch(`/api/empleados/${id}`, { method: 'DELETE' });
+            if (!response.ok) throw new Error('Error al eliminar empleado.');
+            alert('Empleado eliminado correctamente.');
+            document.querySelector(`#adminEmployeesTable .delete-button[data-id="${id}"]`).closest('tr').remove();
+        } catch (error) {
+            console.error('Error al eliminar empleado:', error);
+        }
+    }
+};
 
 //funcion para completar y eliminar una tarea
 const taskForm = document.getElementById('taskForm');
@@ -355,42 +402,42 @@ document.getElementById('closeTaskModal').addEventListener('click', () => {
         }
     };
 
-const addProduction = async () => {
-    const sector = document.getElementById('sector').value;
-    const nombreProducto = document.getElementById('nombreProducto').value;
-    const cantidad = document.getElementById('cantidad').value;
-    const unidad = document.getElementById('unidad').value;
-    const userId = localStorage.getItem('id_usuario'); 
+    const addProduction = async () => {
+        const sector = document.getElementById('sector').value;
+        const nombreProducto = document.getElementById('nombreProducto').value;
+        const cantidad = document.getElementById('cantidad').value;
+        const unidad = document.getElementById('unidad').value;
+        const userId = localStorage.getItem('id_usuario'); 
 
-     if (!userId) {
-        alert('Usuario no autenticado. Por favor, inicie sesión nuevamente.');
-        return;
-    }
-    try {
-        const response = await fetch('/api/produccion', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                id_usuario: localStorage.getItem('id_usuario'),
-                producto: nombreProducto,
-                sector,
-                cantidad,
-                unidad,
-            }),
-        });
-
-        if (!response.ok) {
-            throw new Error('Error al agregar producción.');
+        if (!userId) {
+            alert('Usuario no autenticado. Por favor, inicie sesión nuevamente.');
+            return;
         }
+        try {
+            const response = await fetch('/api/produccion', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id_usuario: localStorage.getItem('id_usuario'),
+                    producto: nombreProducto,
+                    sector,
+                    cantidad,
+                    unidad,
+                }),
+            });
 
-        alert('Producción añadida correctamente.');
-        closeModal(modals.productionModal);
-        loadProductionData(); // Recargar tabla
-    } catch (error) {
-        console.error('Error al agregar producción:', error);
-        alert('Ocurrió un error al agregar la producción.');
-    }
-};
+            if (!response.ok) {
+                throw new Error('Error al agregar producción.');
+            }
+
+            alert('Producción añadida correctamente.');
+            closeModal(modals.productionModal);
+            loadProductionData(); // Recargar tabla
+        } catch (error) {
+            console.error('Error al agregar producción:', error);
+            alert('Ocurrió un error al agregar la producción.');
+        }
+    };
 
 // Vincular la función al botón "Guardar" en el modal de producción
 document.getElementById('saveProductionButton').addEventListener('click', addProduction);
@@ -501,7 +548,7 @@ async function loadProductsProduction() {
 }
 
     // Funciones para Admin
-    const loadAdminProductionData = async () => { 
+const loadAdminProductionData = async () => { 
         try {
             const response = await fetch('/api/admin/produccion');
             const productions = await response.json();
@@ -517,74 +564,63 @@ async function loadProductsProduction() {
                     <td>${row.cantidad}</td>
                     <td>${row.unidad}</td>
                     <td>${row.sector}</td>
-                    <td>
-                        <button class="delete-button" data-id="1">
-                        <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
                 </tr>
             `).join('');
         } catch (error) {
             console.error('Error al cargar producción (admin):', error);
         }
-    };
+};
 
     // Función para manejar el formulario de agregar producto
-const addProductForm = document.getElementById('addProductForm');
-addProductForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
+    const addProductForm = document.getElementById('addProductForm');
+    addProductForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-    // Obtener los datos del formulario
-    const nombre = document.getElementById('nombreProductoNuevo').value;
-    const sector = document.getElementById('sectorProducto').value;
-    const cantidad_disponible = parseInt(document.getElementById('cantidad_disponibleProducto').value);
-    const unidad = document.getElementById('unidadProducto').value;
-    const precio_unitario = parseFloat(document.getElementById('precioUnitarioProducto').value);
-    const precio_venta = parseFloat(document.getElementById('precioVentaProducto').value);
+        // Obtener los datos del formulario
+        const nombre = document.getElementById('nombreProductoNuevo').value;
+        const sector = document.getElementById('sectorProducto').value;
+        const cantidad_disponible = parseInt(document.getElementById('cantidad_disponibleProducto').value);
+        const unidad = document.getElementById('unidadProducto').value;
+        const precio_unitario = parseFloat(document.getElementById('precioUnitarioProducto').value);
+        const precio_venta = parseFloat(document.getElementById('precioVentaProducto').value);
 
-    if (!nombre || !sector || isNaN(cantidad_disponible) || !unidad || isNaN(precio_unitario) || isNaN(precio_venta)) {
-        alert('Por favor, complete todos los campos correctamente.');
-        return;
-    }
-
-    try {
-        // Realizar solicitud POST al backend
-        const response = await fetch('/api/admin/productos', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                nombre,
-                sector,
-                cantidad_disponible,
-                unidad,
-                precio_unitario,
-                precio_venta
-            }),
-        });
-
-        if (!response.ok) {
-            throw new Error('Error al agregar el producto.');
+        if (!nombre || !sector || isNaN(cantidad_disponible) || !unidad || isNaN(precio_unitario) || isNaN(precio_venta)) {
+            alert('Por favor, complete todos los campos correctamente.');
+            return;
         }
 
-        alert('Producto agregado exitosamente.');
+        try {
+            // Realizar solicitud POST al backend
+            const response = await fetch('/api/admin/productos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nombre,
+                    sector,
+                    cantidad_disponible,
+                    unidad,
+                    precio_unitario,
+                    precio_venta
+                }),
+            });
 
-        // Limpiar el formulario y cerrar el modal
-        addProductForm.reset();
-        closeModal(document.getElementById('addProductModal'));
+            if (!response.ok) {
+                throw new Error('Error al agregar el producto.');
+            }
 
-        // Recargar los datos de la tabla de productos
-        loadAdminProducts();
-    } catch (error) {
-        console.error('Error al agregar producto:', error);
-        alert('Ocurrió un error al agregar el producto. Intente nuevamente.');
-    }
-});
+            alert('Producto agregado exitosamente.');
 
-// Cerrar modal de agregar producto al presionar el botón de cancelar
-document.getElementById('cancelAddProductForm').addEventListener('click', () => {
-    addProductForm.reset();
-    closeModal(document.getElementById('addProductModal'));
-});
+            // Limpiar el formulario y cerrar el modal
+            addProductForm.reset();
+            closeModal(document.getElementById('addProductModal'));
+
+            // Recargar los datos de la tabla de productos
+            loadAdminProducts();
+        } catch (error) {
+            console.error('Error al agregar producto:', error);
+            alert('Ocurrió un error al agregar el producto. Intente nuevamente.');
+        }
+    });
 
     const loadAdminProducts = async () => {
         try {
@@ -592,13 +628,13 @@ document.getElementById('cancelAddProductForm').addEventListener('click', () => 
             const products = await response.json();
             const adminProductsTable = document.getElementById('adminProductsTable').querySelector('tbody');
             adminProductsTable.innerHTML = products.map(row => `
-                <tr>
+                <tr data-id="${row.id}">
                     <td>${row.nombre}</td>
                     <td>${row.precio_unitario.toFixed(2)}</td>
                     <td>${row.precio_venta.toFixed(2)}</td>
                     <td>${row.cantidad_disponible}</td>
                     <td>${row.unidad}</td>
-                    <td><button class="delete-button" data-id="1">
+                    <td><button class="delete-button" data-id="${row.id}">
                         <i class="fas fa-trash"></i>
                     </button>
                     <td>
@@ -637,14 +673,14 @@ document.getElementById('cancelAddProductForm').addEventListener('click', () => 
             const rawMaterials = await response.json();
             const adminRawMaterialTable = document.getElementById('adminRawMaterialTable').querySelector('tbody');
             adminRawMaterialTable.innerHTML = rawMaterials.map(row => `
-                <tr>
+                <tr data-id="${row.id}">
                     <td>${row.nombre}</td>
                     <td>${row.cantidad}</td>
                     <td>${row.unidad}</td>
                     <td>${row.precio_compra}</td>
                     <td>${row.fecha_hora}</td>
                     <td>
-                        <button class="delete-button" data-id="1">
+                        <button class="delete-button" data-id="${row.id}">
                         <i class="fas fa-trash"></i>
                         </button>
                     </td>
@@ -677,11 +713,11 @@ document.getElementById('cancelAddProductForm').addEventListener('click', () => 
             const employees = await response.json();
             const adminEmployeesTable = document.getElementById('adminEmployeesTable').querySelector('tbody');
             adminEmployeesTable.innerHTML = employees.map(row => `
-                <tr>
+                <tr data-id="${row.id}">
                     <td>${row.nombre}</td>
                     <td>${row.sector}</td>
                     <td>
-                        <button class="delete-button" data-id="1">
+                        <button class="delete-button" id="${row.id}">
                         <i class="fas fa-trash"></i>
                         </button>
                     </td>
@@ -692,7 +728,6 @@ document.getElementById('cancelAddProductForm').addEventListener('click', () => 
         }
         setupDeleteButtons();
     };
-
     const submitSalesForm = async (e) => {
         e.preventDefault();
 
@@ -862,7 +897,11 @@ document.getElementById('cancelAddUserForm').addEventListener('click', () => {
     closeModal(modals.addUserModal);
 });
 
-
+// Cerrar modal de agregar producto al presionar el botón de cancelar
+document.getElementById('cancelAddProductForm').addEventListener('click', () => {
+    addProductForm.reset();
+    closeModal(document.getElementById('addProductModal'));
+});
 
     // Funciones para cargar datos
     const loadUserData = async () => {

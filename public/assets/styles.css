@@ -90,13 +90,18 @@
     table th, table td {
         border: 1px solid #ddd;
         padding: 8px;
-        text-align: left;
+        text-align: center;
     }
 
     table th {
         background-color: #a60000;
-        color: black;
+        color: white;
     }
+
+    table td {
+        color: black
+    }
+    
     /* Modal Estilos */
         .modal {
             display: none;
