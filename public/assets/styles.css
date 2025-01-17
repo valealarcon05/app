@@ -120,3 +120,15 @@
             text-align: center;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
+
+        .delete-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: red;
+    font-size: 1.2em;
+}
+
+.delete-button:hover {
+    color: darkred;
+}

@@ -208,29 +208,6 @@ app.post('/api/produccion', async (req, res) => {
     }
 });
 
-app.put('/api/produccion/:id', (req, res) => {
-    const { id } = req.params;
-    const { producto, sector, cantidad, unidad } = req.body;
-
-    if (!producto || !sector || !cantidad || !unidad) {
-        return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
-    }
-
-    const query = `
-        UPDATE Produccion
-        SET producto = ?, sector = ?, cantidad = ?, unidad = ?
-        WHERE id = ?
-    `;
-
-    db.run(query, [producto, sector, cantidad, unidad, id], function (err) {
-        if (err) {
-            console.error('Error al actualizar producción:', err.message);
-            return res.status(500).json({ error: 'Error al actualizar producción.' });
-        }
-        res.status(200).json({ message: 'Producción actualizada correctamente.' });
-    });
-});
-
 app.get('/api/produccion', (req, res) => {
     const id_usuario = req.query.id_usuario;
     const query = `
@@ -249,6 +226,7 @@ app.get('/api/produccion', (req, res) => {
 
 app.delete('/api/produccion/:id', (req, res) => {
     const { id } = req.params;
+    console.log('ID recibido para eliminar producción:', id);
     const query = `DELETE FROM Produccion WHERE id = ?`;
     db.run(query, [id], function (err) {
         if (err) {
@@ -260,6 +238,21 @@ app.delete('/api/produccion/:id', (req, res) => {
 });
 
 // **API: Obtener Producción por ID (Editar Producción)**
+// Eliminar un producto por su ID
+app.delete('/api/productos/:id', (req, res) => {
+    const { id } = req.params;
+    console.log('ID recibido para eliminar producción:', id);
+
+    const query = `DELETE FROM Productos WHERE id = ?`;
+    db.run(query, [id], function (err) {
+        if (err) {
+            console.error('Error al eliminar producto:', err.message);
+            return res.status(500).json({ error: 'Error al eliminar producto.' });
+        }
+        res.status(200).json({ message: 'Producto eliminado correctamente.' });
+    });
+});
+
 app.get('/api/produccion/:id', (req, res) => {
     const { id } = req.params;
 
@@ -465,6 +458,7 @@ app.put('/api/materia-prima/:id', (req, res) => {
 // Eliminar una Materia Prima
 app.delete('/api/materia-prima/:id', (req, res) => {
     const { id } = req.params;
+    console.log('ID recibido para eliminar producción:', id);
 
     const query = `DELETE FROM MateriaPrima WHERE id = ?`;
     db.run(query, [id], function (err) {
@@ -591,6 +585,19 @@ app.get('/api/admin/empleados', (req, res) => {
     });
 });
 
+app.delete('/api/empleados/:id', (req, res) => {
+    const { id } = req.params;
+
+    const query = `DELETE FROM Usuarios WHERE id = ?`;
+    db.run(query, [id], function (err) {
+        if (err) {
+            console.error('Error al eliminar usuario:', err.message);
+            return res.status(500).json({ error: 'Error al eliminar usuario.' });
+        }
+        res.status(200).json({ message: 'Usuario eliminado correctamente.' });
+    });
+});
+
 // **API: Producción (Admin)**
 app.get('/api/admin/produccion', (req, res) => {
     const query = `
@@ -666,6 +673,8 @@ app.get('/api/admin/materia-prima', (req, res) => {
 
 app.post('/api/admin/materia-prima', (req, res) => {
     const { nombre, cantidad, unidad, precio_compra, fecha_hora } = req.body;
+    console.log('Datos recibidos:', { nombre, cantidad, unidad, precio_compra, fecha_hora });
+
     if (!nombre || !cantidad || !unidad || !precio_compra || !fecha_hora) {
         return res.status(400).json({ error: 'Faltan datos obligatorios.' });
     }
@@ -706,19 +715,6 @@ app.get('/api/admin/ventas', (req, res) => {
             return res.status(500).json({ error: 'Error al obtener ventas.' });
         }
         res.json(rows);
-    });
-});
-
-app.delete('/api/ventas/:id', (req, res) => {
-    const { id } = req.params;
-
-    const queryDeleteVenta = `DELETE FROM Ventas WHERE id = ?`;
-    db.run(queryDeleteVenta, [id], function (err) {
-        if (err) {
-            console.error('Error al eliminar venta:', err.message);
-            return res.status(500).json({ error: 'Error al eliminar venta.' });
-        }
-        res.status(200).json({ message: 'Venta eliminada correctamente.' });
     });
 });
 

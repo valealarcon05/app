@@ -15,7 +15,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModal = (modal) => modal.style.display = 'none';
 
     // Botones para abrir modales
-    document.getElementById('addProductionButton').addEventListener('click', () => showModal(modals.productionModal));
+    document.getElementById('addProductionButton').addEventListener('click', () => {
+        loadProductsProduction();
+        showModal(modals.productionModal);
+    });
     document.getElementById('addSaleButton').addEventListener('click', () => {
         loadAvailableProducts(); // Cargar productos disponibles para ventas
         showModal(modals.salesModal);
@@ -31,114 +34,45 @@ document.addEventListener('DOMContentLoaded', () => {
         if (closeButton) closeButton.addEventListener('click', () => closeModal(modals[modalKey]));
     });
 
-    // Funciones para los botones de edición y eliminación en admin
-    const setupEditAndDeleteButtons = () => {
-        // Producción
-        document.querySelectorAll('#adminProductionTable .edit-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const rowId = e.target.dataset.id; // ID de la fila
-                editProduction(rowId);
-            });
+    const setupDeleteButtons = () => {
+    // Botones de eliminación en la tabla de producción
+    document.querySelectorAll('#adminProductionTable .delete-button').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const rowId = e.target.dataset.id;
+            deleteProduction(rowId);
         });
-        document.querySelectorAll('#adminProductionTable .delete-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const rowId = e.target.dataset.id;
-                deleteProduction(rowId);
-            });
+    });
+
+    // Botones de eliminación en la tabla de materia prima
+    document.querySelectorAll('#adminRawMaterialTable .delete-button').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const rowId = e.target.dataset.id;
+            deleteRawMaterial(rowId);
         });
-         // Ventas
-        document.querySelectorAll('#adminSalesTable .edit-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const rowId = e.target.dataset.id;
-                editSale(rowId);
-            });
+    });
+
+    // Botones de eliminación en la tabla de productos
+    document.querySelectorAll('#adminProductsTable .delete-button').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const rowId = e.target.dataset.id;
+            deleteProducts(rowId);
         });
-        document.querySelectorAll('#adminSalesTable .delete-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const rowId = e.target.dataset.id;
-                deleteSale(rowId);
-            });
+    });
+
+    // Botones de eliminación en la tabla de empleados (corregido el selector)
+    document.querySelectorAll('#adminEmployeesTable .delete-button').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const rowId = e.target.dataset.id;
+            deleteEmployees(rowId); // Nombre de la función corregido
         });
-
-        // Materia Prima
-        document.querySelectorAll('#adminRawMaterialTable .edit-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const rowId = e.target.dataset.id;
-                editRawMaterial(rowId);
-            });
-        });
-        document.querySelectorAll('#adminRawMaterialTable .delete-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const rowId = e.target.dataset.id;
-                deleteRawMaterial(rowId);
-            });
-        });
-    };
-
-    // Funciones para editar elementos
-    const editProduction = async (id) => {
-        try {
-        // Obtener datos de la producción
-        const response = await fetch(`/api/produccion/${id}`);
-        if (!response.ok) throw new Error('Error al obtener datos de la producción.');
-
-        const production = await response.json();
-
-        // Mostrar los datos en el modal de producción
-        document.getElementById('sector').value = production.sector;
-        document.getElementById('nombreProducto').value = production.producto;
-        document.getElementById('cantidad').value = production.cantidad;
-        document.getElementById('unidad').value = production.unidad;
-
-        // Configurar el botón "Guardar" para actualizar la producción
-        const saveButton = document.getElementById('save-production-button');
-        saveButton.onclick = () => updateProduction(id);
-        showModal(modals.productionModal);
-        } catch (error) {
-        console.error('Error al cargar la producción:', error);
-        alert('No se pudo cargar la producción para editar.');
-    }
-    };
-
-const editSale = async (id) => {
-    const sector = document.getElementById('sectorVenta').value;
-    const idProducto = document.getElementById('nombreProductoVenta').value;
-    const cantidad = document.getElementById('cantidadVenta').value;
-    const metodoPago = document.getElementById('metodoPago').value;
-
-    try {
-        const response = await fetch(`/api/ventas/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id_producto: idProducto, cantidad, metodo_pago: metodoPago, sector }),
-        });
-
-        if (!response.ok) {
-            throw new Error('Error al actualizar la venta.');
-        }
-
-        alert('Venta actualizada correctamente.');
-        closeModal(modals.salesModal);
-        loadSalesData(); // Recargar tabla
-    } catch (error) {
-        console.error('Error al actualizar venta:', error);
-    }
+    });
 };
 
-    const editRawMaterial = async (id) => {
-        const response = await fetch(`/api/materia-prima/${id}`);
-        const rawMaterial = await response.json();
-
-        document.getElementById('nombreMateriaPrima').value = rawMaterial.nombre;
-        document.getElementById('cantidadMateriaPrima').value = rawMaterial.cantidad;
-        document.getElementById('unidadMateriaPrima').value = rawMaterial.unidad;
-        document.getElementById('precioCompraMateriaPrima').value = rawMaterial.precio_compra;
-
-        showModal(modals.addRawMaterialForm);
-    };
-
-    // Funciones para eliminar elementos
     const deleteProduction = async (id) => {
+    if (!id) {
+        console.error('ID inválido para producción.');
+        return;
+    }
     if (confirm('¿Estás seguro de eliminar esta producción?')) {
         try {
             const response = await fetch(`/api/produccion/${id}`, { method: 'DELETE' });
@@ -148,37 +82,80 @@ const editSale = async (id) => {
             }
 
             alert('Producción eliminada correctamente.');
-            loadProductionData(); // Recargar tabla
+            const row = document.querySelector(`#adminProductionTable .delete-button[data-id="${id}"]`).closest('tr');
+            if (row) row.remove();
         } catch (error) {
             console.error('Error al eliminar producción:', error);
         }
     }
-};
-
-const deleteSale = async (id) => {
-    if (confirm('¿Estás seguro de eliminar esta venta?')) {
-        try {
-            const response = await fetch(`/api/ventas/${id}`, { method: 'DELETE' });
-
-            if (!response.ok) {
-                throw new Error('Error al eliminar la venta.');
-            }
-
-            alert('Venta eliminada correctamente.');
-            loadSalesData(); // Recargar tabla
-        } catch (error) {
-            console.error('Error al eliminar venta:', error);
-        }
-    }
-};
-
-    const deleteRawMaterial = async (id) => {
-        if (confirm('¿Estás seguro de eliminar esta materia prima?')) {
-            await fetch(`/api/materia-prima/${id}`, { method: 'DELETE' });
-            loadAdminRawMaterialData();
-        }
     };
 
+    const deleteRawMaterial = async (id) => {
+    if (!id) {
+        console.error('ID inválido para materia prima.');
+        return;
+    }
+    if (confirm('¿Estás seguro de eliminar esta materia prima?')) {
+        try {
+            const response = await fetch(`/api/materia-prima/${id}`, { method: 'DELETE' });
+
+            if (!response.ok) {
+                throw new Error('Error al eliminar materia prima.');
+            }
+
+            alert('Materia prima eliminada correctamente.');
+            const row = document.querySelector(`#adminRawMaterialTable .delete-button[data-id="${id}"]`).closest('tr');
+            if (row) row.remove();
+        } catch (error) {
+            console.error('Error al eliminar materia prima:', error);
+        }
+    }
+    };
+
+    const deleteProducts = async (id) => {
+    if (!id) {
+        console.error('ID inválido para producto.');
+        return;
+    }
+    if (confirm('¿Estás seguro de eliminar este producto?')) {
+        try {
+            const response = await fetch(`/api/productos/${id}`, { method: 'DELETE' });
+
+            if (!response.ok) {
+                throw new Error('Error al eliminar producto.');
+            }
+
+            alert('Producto eliminado correctamente.');
+            const row = document.querySelector(`#adminProductsTable .delete-button[data-id="${id}"]`).closest('tr');
+            if (row) row.remove();
+        } catch (error) {
+            console.error('Error al eliminar producto:', error);
+        }
+    }
+    };
+
+    const deleteEmployees = async (id) => {
+    if (!id) {
+        console.error('ID inválido para empleado.');
+        return;
+    }
+    if (confirm('¿Estás seguro de eliminar este empleado?')) {
+        try {
+            const response = await fetch(`/api/empleados/${id}`, { method: 'DELETE' });
+
+            if (!response.ok) {
+                throw new Error('Error al eliminar empleado.');
+            }
+
+            alert('Empleado eliminado correctamente.');
+            const row = document.querySelector(`#adminEmployeesTable .delete-button[data-id="${id}"]`).closest('tr');
+            if (row) row.remove();
+        } catch (error) {
+            console.error('Error al eliminar empleado:', error);
+        }
+    }
+    };
+    
     // Inicio de sesión
     const loginForm = document.getElementById('loginForm');
     loginForm.addEventListener('submit', async (e) => {
@@ -216,7 +193,7 @@ const deleteSale = async (id) => {
     });
 
     // Función para cerrar sesión
-const logout = async () => {
+    const logout = async () => {
     const id_usuario = localStorage.getItem('id_usuario');
     const egreso = new Date().toISOString();
 
@@ -238,7 +215,7 @@ const logout = async () => {
         console.error('Error al cerrar sesión:', error);
         alert('Ocurrió un error al cerrar sesión. Intente nuevamente.');
     }
-};
+    };
 
 // Vincular la función al botón de cerrar sesión
 document.getElementById('logoutButton').addEventListener('click', logout);
@@ -415,31 +392,6 @@ const addProduction = async () => {
     }
 };
 
-const updateProduction = async (id) => {
-    const sector = document.getElementById('sector').value;
-    const nombreProducto = document.getElementById('nombreProducto').value;
-    const cantidad = document.getElementById('cantidad').value;
-    const unidad = document.getElementById('unidad').value;
-
-    try {
-        const response = await fetch(`/api/produccion/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ producto: nombreProducto, sector, cantidad, unidad }),
-        });
-
-        if (!response.ok) {
-            throw new Error('Error al actualizar la producción.');
-        }
-
-        alert('Producción actualizada correctamente.');
-        closeModal(modals.productionModal);
-        loadProductionData(); // Recargar tabla
-    } catch (error) {
-        console.error('Error al actualizar producción:', error);
-    }
-};
-
 // Vincular la función al botón "Guardar" en el modal de producción
 document.getElementById('saveProductionButton').addEventListener('click', addProduction);
 
@@ -516,6 +468,38 @@ document.getElementById('saveProductionButton').addEventListener('click', addPro
         }
     };
 
+    // Cargar productos disponibles para ventas
+// Función para cargar productos en el dropdown del modal
+async function loadProductsProduction() {
+    try {
+        // Llamada al backend para obtener todos los productos desde la base de datos
+        const response = await fetch('/api/products'); // Asegúrate de que esta ruta esté configurada correctamente en tu backend
+        if (!response.ok) {
+            throw new Error('Error al cargar los productos desde la base de datos');
+        }
+
+        const products = await response.json();
+
+        // Selecciona el elemento del dropdown del modal
+        const productDropdown = document.getElementById('nombreProductoProduccion');
+
+        // Limpia las opciones actuales
+        productDropdown.innerHTML = '';
+
+        // Itera sobre los productos obtenidos y crea las opciones del dropdown
+        products.forEach(product => {
+            const option = document.createElement('option');
+            option.value = product.nombre; // Ajusta "nombre" al nombre de tu columna en la base de datos
+            option.textContent = product.nombre;
+            productDropdown.appendChild(option);
+        });
+
+    } catch (error) {
+        console.error('Error al cargar los productos en el modal:', error);
+        alert('Hubo un error al cargar los productos. Inténtalo de nuevo.');
+    }
+}
+
     // Funciones para Admin
     const loadAdminProductionData = async () => { 
         try {
@@ -534,8 +518,9 @@ document.getElementById('saveProductionButton').addEventListener('click', addPro
                     <td>${row.unidad}</td>
                     <td>${row.sector}</td>
                     <td>
-                        <button class="edit-btn">Editar</button>
-                        <button class="delete-btn">Eliminar</button>
+                        <button class="delete-button" data-id="1">
+                        <i class="fas fa-trash"></i>
+                        </button>
                     </td>
                 </tr>
             `).join('');
@@ -613,15 +598,20 @@ document.getElementById('cancelAddProductForm').addEventListener('click', () => 
                     <td>${row.precio_venta.toFixed(2)}</td>
                     <td>${row.cantidad_disponible}</td>
                     <td>${row.unidad}</td>
+                    <td><button class="delete-button" data-id="1">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    <td>
                 </tr>
             `).join('');
         } catch (error) {
             console.error('Error al cargar productos (admin):', error);
         }
+        setupDeleteButtons();
     };
 
     const loadAdminSalesData = async () => {
-         try {
+        try {
             const response = await fetch('/api/admin/ventas');
             const sales = await response.json();
             const adminSalesTable = document.getElementById('adminSalesTable').querySelector('tbody');
@@ -642,7 +632,7 @@ document.getElementById('cancelAddProductForm').addEventListener('click', () => 
         }
     };
     const loadAdminRawMaterialData = async () => {
-         try {
+        try {
             const response = await fetch('/api/admin/materia-prima');
             const rawMaterials = await response.json();
             const adminRawMaterialTable = document.getElementById('adminRawMaterialTable').querySelector('tbody');
@@ -654,14 +644,16 @@ document.getElementById('cancelAddProductForm').addEventListener('click', () => 
                     <td>${row.precio_compra}</td>
                     <td>${row.fecha_hora}</td>
                     <td>
-                         <button class="edit-btn">Editar</button>
-                        <button class="delete-btn">Eliminar</button>
-                    <td>
+                        <button class="delete-button" data-id="1">
+                        <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
                 </tr>
             `).join('');
         } catch (error) {
             console.error('Error al cargar materia prima (admin):', error);
         }
+        setupDeleteButtons();
     };
     const loadAdminUsersData = async () => {
          try {
@@ -689,14 +681,16 @@ document.getElementById('cancelAddProductForm').addEventListener('click', () => 
                     <td>${row.nombre}</td>
                     <td>${row.sector}</td>
                     <td>
-                        <button class="edit-btn">Editar</button>
-                        <button class="delete-btn">Eliminar</button>
+                        <button class="delete-button" data-id="1">
+                        <i class="fas fa-trash"></i>
+                        </button>
                     </td>
                 </tr>
             `).join('');
         } catch (error) {
             console.error('Error al cargar empleados (admin):', error);
         }
+        setupDeleteButtons();
     };
 
     const submitSalesForm = async (e) => {
@@ -759,6 +753,7 @@ document.getElementById('cancelAddProductForm').addEventListener('click', () => 
             alert('Ocurrió un error al realizar la venta. Intente nuevamente.');
         }
     };
+
     //conectar al formulario las ventas y productos con stock
     document.getElementById('salesForm').addEventListener('submit', submitSalesForm);
 
@@ -884,7 +879,7 @@ document.getElementById('cancelAddUserForm').addEventListener('click', () => {
         await loadAdminRawMaterialData();
         await loadAdminUsersData();
         await loadAdminEmployeesData();
-        setupEditAndDeleteButtons();
+        setupDeleteButtons();
     };
 
      loadAdminData(); // Inicializa la carga de datos para el admin
