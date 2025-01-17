@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const salesTable = document.getElementById('salesTable').querySelector('tbody');
         const sessionsTable = document.getElementById('sessionsTable').querySelector('tbody');
         const taskTableBody = document.getElementById('taskTableBody');
-      
+
         // Mostrar modal de producción
         addProductionButton.addEventListener('click', () => {
             document.getElementById('productionModal').style.display = 'flex';
