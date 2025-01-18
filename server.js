@@ -753,6 +753,52 @@ app.get('/api/sesiones', async (req, res) => {
     }
 });
 
+app.get('/api/ingresos-semanales', async (req, res) => {
+    const query = `
+        SELECT sector, SUM(precio * cantidad) AS ingresos, STRFTIME('%W', fecha_hora) AS semana
+        FROM ventas
+        GROUP BY sector, semana
+        ORDER BY semana;
+    `;
+    db.all(query, [], (err, rows) => {
+        if (err) {
+            console.error('Error al obtener ingresos semanales:', err);
+            res.status(500).json({ error: 'Error al obtener datos de ingresos semanales.' });
+        } else {
+            res.json(rows);
+        }
+    });
+});
+
+app.get('/api/rendimiento', async (req, res) => {
+    const queryProducido = `
+        SELECT SUM(cantidad) AS total_producido
+        FROM produccion
+        WHERE STRFTIME('%W', fecha_hora) = STRFTIME('%W', 'now');
+    `;
+    const queryVendido = `
+        SELECT SUM(cantidad) AS total_vendido
+        FROM ventas
+        WHERE STRFTIME('%W', fecha_hora) = STRFTIME('%W', 'now');
+    `;
+    try {
+        const producido = await new Promise((resolve, reject) =>
+            db.get(queryProducido, [], (err, row) => (err ? reject(err) : resolve(row)))
+        );
+        const vendido = await new Promise((resolve, reject) =>
+            db.get(queryVendido, [], (err, row) => (err ? reject(err) : resolve(row)))
+        );
+
+        res.json({
+            producido: producido.total_producido || 0,
+            vendido: vendido.total_vendido || 0,
+        });
+    } catch (error) {
+        console.error('Error al obtener rendimiento:', error);
+        res.status(500).json({ error: 'Error al obtener rendimiento.' });
+    }
+});
+
 // Iniciar el servidor
 app.listen(PORT, '0.0.0.0',() => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);

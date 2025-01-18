@@ -8,6 +8,7 @@
     "dev": "nodemon server.js"
   },
   "dependencies": {
+    "bootstrap": "^5.3.3",
     "express": "^4.21.2",
     "joi": "^17.13.3",
     "sqlite": "^5.1.1",

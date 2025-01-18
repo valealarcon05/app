@@ -137,3 +137,20 @@
 .delete-button:hover {
     color: darkred;
 }
+
+    #adminGraphsSection {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+    }
+
+    #adminGraphsSection > div {
+        flex: 1;
+        max-width: 50%;
+    }
+
+    canvas {
+        max-width: 100%;
+        height: auto;
+    }
+

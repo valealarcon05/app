@@ -76,9 +76,75 @@ const initTables = async () => {
     setupDeleteButtons('#adminEmployeesTable', (id) => deleteItem('/api/empleados', id, '#adminEmployeesTable'));
 };
 
+const loadCharts = async () => {
+    // Gráfico de barras: ingresos por sector por semana
+    const weeklyRevenueResponse = await fetch('/api/ingresos-semanales');
+    const weeklyRevenueData = await weeklyRevenueResponse.json();
+
+    const sectors = [...new Set(weeklyRevenueData.map(row => row.sector))];
+    const weeks = [...new Set(weeklyRevenueData.map(row => row.semana))];
+
+    const datasets = sectors.map(sector => {
+        const data = weeks.map(week => {
+            const row = weeklyRevenueData.find(r => r.sector === sector && r.semana === week);
+            return row ? row.ingresos : 0;
+        });
+        return {
+            label: sector,
+            data: data,
+            backgroundColor: `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.5)`,
+            borderColor: `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 1)`,
+            borderWidth: 1,
+        };
+    });
+
+    new Chart(document.getElementById('weeklyRevenueChart'), {
+        type: 'bar',
+        data: {
+            labels: weeks,
+            datasets: datasets,
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Ingresos por Semana (por Sector)',
+                },
+            },
+        },
+    });
+
+    // Gráfico de tortas: producido vs vendido
+    const performanceResponse = await fetch('/api/rendimiento');
+    const performanceData = await performanceResponse.json();
+
+    new Chart(document.getElementById('productionSalesChart'), {
+        type: 'pie',
+        data: {
+            labels: ['Producido', 'Vendido'],
+            datasets: [{
+                data: [performanceData.producido, performanceData.vendido],
+                backgroundColor: ['rgba(54, 162, 235, 0.5)', 'rgba(255, 99, 132, 0.5)'],
+                borderColor: ['rgba(54, 162, 235, 1)', 'rgba(255, 99, 132, 1)'],
+                borderWidth: 1,
+            }],
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Producido vs Vendido (Semana Actual)',
+                },
+            },
+        },
+    });
+};
 
 document.addEventListener('DOMContentLoaded', () => {
     initTables();
+    loadCharts();
     // Variables generales
     const userId = localStorage.getItem('id_usuario'); // ID del usuario logueado
     const modals = {
