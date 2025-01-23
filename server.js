@@ -124,9 +124,10 @@ const saleSchema = Joi.object({
 });
 
 const userSchema = Joi.object({
-    nombre: Joi.string().min(1).required(),
-    rol: Joi.string().valid('empleado', 'dueño').required(),
-    contraseña: Joi.string().min(6).required()
+    nombre: Joi.string().min(3).required(),
+    rol: Joi.string().valid('Empleado', 'Administrador').required(),
+    sector: Joi.string().valid('Kiosko', 'Cantina', 'Congelados', 'Parrilla').required(),
+    contraseña: Joi.string().min(3).required()
 });
 
 // **API: Inicio de sesión**
@@ -571,15 +572,15 @@ app.post('/api/admin/usuarios', async (req, res) => {
         }
 
         const db = await dbPromise;
-        const { nombre, rol, contraseña } = req.body;
+        const { nombre, rol, sector, contraseña } = req.body;
 
         const userExists = await db.get('SELECT id FROM Usuarios WHERE nombre = ?', [nombre]);
         if (userExists) {
             return res.status(400).json({ error: 'El nombre de usuario ya está en uso.' });
         }
 
-        const query = `INSERT INTO Usuarios (nombre, rol, contraseña) VALUES (?, ?, ?)`;
-        await db.run(query, [nombre, rol, contraseña]);
+        const query = `INSERT INTO Usuarios (nombre, rol, sector, contraseña) VALUES (?, ?, ?, ?)`;
+        await db.run(query, [nombre, rol, sector, contraseña]);
         res.status(200).json({ message: 'Usuario agregado correctamente.' });
     } catch (err) {
         console.error('Error al agregar usuario:', err.message);

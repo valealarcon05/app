@@ -21,6 +21,11 @@ const setupDeleteButtons = (tableId, deleteCallback) => {
 };
 // Función genérica para eliminar un elemento
 const deleteItem = async (url, id, tableId) => {
+    if (!id) {
+        console.error('ID inválido para eliminar.');
+        return;
+    }
+    if (confirm('¿Estás seguro de eliminar este elemento?')) {
     try {
         const response = await fetch(`${url}/${id}`, { method: 'DELETE' });
         if (!response.ok) throw new Error('Error al eliminar el elemento.');
@@ -30,6 +35,7 @@ const deleteItem = async (url, id, tableId) => {
     } catch (error) {
         console.error('Error al eliminar el elemento:', error);
     }
+}
 };
 // Inicializar tablas y acciones
 const initTables = async () => {
@@ -67,7 +73,7 @@ const initTables = async () => {
     await loadTableData('/api/admin/empleados', '#adminEmployeesTable', (row) => `
         <tr>
             <td>${row.nombre}</td>
-            <td>${row.sector}</td>
+            <td>${row.sector || 'N/A'}</td>
             <td>
                 <button class="delete-button" data-id="${row.id}">Eliminar</button>
             </td>
@@ -245,93 +251,58 @@ document.addEventListener('DOMContentLoaded', () => {
 document.getElementById('logoutButton').addEventListener('click', logout);
 document.getElementById('logoutButtonAdmin').addEventListener('click', logout);
 
+// Función genérica para manejar la eliminación de elementos
+const deleteItem = async (url, id, tableId) => {
+    if (!id) {
+        console.error('ID inválido para eliminar.');
+        return;
+    }
+    if (confirm('¿Estás seguro de eliminar este elemento?')) {
+        try {
+            const response = await fetch(`${url}/${id}`, { method: 'DELETE' });
+            if (!response.ok) throw new Error('Error al eliminar el elemento.');
+
+            alert('Elemento eliminado correctamente.');
+
+            // Eliminar la fila correspondiente del DOM
+            const row = document.querySelector(`${tableId} .delete-button[data-id="${id}"]`)?.closest('tr');
+            if (row) row.remove();
+        } catch (error) {
+            console.error('Error al eliminar el elemento:', error);
+        }
+    }
+};
+
+// Configuración de eventos con delegación
 const setupDeleteButtons = () => {
-    // Botones de eliminación en la tabla de materia prima
-    document.querySelectorAll('#adminRawMaterialTable .delete-button').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const rowId = e.target.dataset.id || e.target.closest('button').dataset.id;
-            if (rowId) {
-                deleteRawMaterial(rowId);
-            } else {
-                console.error('ID inválido para materia prima.');
-            }
-        });
+    // Delegar eventos en la tabla de materia prima
+    document.querySelector('#adminRawMaterialTable').addEventListener('click', (e) => {
+        const button = e.target.closest('.delete-button');
+        if (button) {
+            const id = button.dataset.id;
+            deleteItem('/api/materia-prima', id, '#adminRawMaterialTable');
+        }
     });
 
-    // Botones de eliminación en la tabla de productos
-    document.querySelectorAll('#adminProductsTable .delete-button').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const rowId = e.target.dataset.id || e.target.closest('button').dataset.id;
-            if (rowId) {
-                deleteProducts(rowId);
-            } else {
-                console.error('ID inválido para producto.');
-            }
-        });
+    // Delegar eventos en la tabla de productos
+    document.querySelector('#adminProductsTable').addEventListener('click', (e) => {
+        const button = e.target.closest('.delete-button');
+        if (button) {
+            const id = button.dataset.id;
+            deleteItem('/api/productos', id, '#adminProductsTable');
+        }
     });
 
-    // Botones de eliminación en la tabla de empleados
-    document.querySelectorAll('#adminEmployeesTable .delete-button').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const rowId = e.target.dataset.id || e.target.closest('button').dataset.id;
-            if (rowId) {
-                deleteEmployees(rowId);
-            } else {
-                console.error('ID inválido para empleado.');
-            }
-        });
+    // Delegar eventos en la tabla de empleados
+    document.querySelector('#adminEmployeesTable').addEventListener('click', (e) => {
+        const button = e.target.closest('.delete-button');
+        if (button) {
+            const id = button.dataset.id;
+            deleteItem('/api/empleados', id, '#adminEmployeesTable');
+        } else {
+            console.error('ID inválido para el botón seleccionado.');
+        }
     });
-};
-
-const deleteRawMaterial = async (id) => {
-    if (!id) {
-        console.error('ID inválido para materia prima.');
-        return;
-    }
-    if (confirm('¿Estás seguro de eliminar esta materia prima?')) {
-        try {
-            const response = await fetch(`/api/materia-prima/${id}`, { method: 'DELETE' });
-            if (!response.ok) throw new Error('Error al eliminar materia prima.');
-            alert('Materia prima eliminada correctamente.');
-            document.querySelector(`#adminRawMaterialTable .delete-button[data-id="${id}"]`).closest('tr').remove();
-        } catch (error) {
-            console.error('Error al eliminar materia prima:', error);
-        }
-    }
-};
-
-const deleteProducts = async (id) => {
-    if (!id) {
-        console.error('ID inválido para producto.');
-        return;
-    }
-    if (confirm('¿Estás seguro de eliminar este producto?')) {
-        try {
-            const response = await fetch(`/api/productos/${id}`, { method: 'DELETE' });
-            if (!response.ok) throw new Error('Error al eliminar producto.');
-            alert('Producto eliminado correctamente.');
-            document.querySelector(`#adminProductsTable .delete-button[data-id="${id}"]`).closest('tr').remove();
-        } catch (error) {
-            console.error('Error al eliminar producto:', error);
-        }
-    }
-};
-
-const deleteEmployees = async (id) => {
-    if (!id) {
-        console.error('ID inválido para empleado.');
-        return;
-    }
-    if (confirm('¿Estás seguro de eliminar este empleado?')) {
-        try {
-            const response = await fetch(`/api/empleados/${id}`, { method: 'DELETE' });
-            if (!response.ok) throw new Error('Error al eliminar empleado.');
-            alert('Empleado eliminado correctamente.');
-            document.querySelector(`#adminEmployeesTable .delete-button[data-id="${id}"]`).closest('tr').remove();
-        } catch (error) {
-            console.error('Error al eliminar empleado:', error);
-        }
-    }
 };
 
 //funcion para completar y eliminar una tarea
@@ -864,10 +835,22 @@ const loadAdminProductionData = async () => {
     // Obtener los valores del formulario
     const nombre = document.getElementById('nombreUsuario').value;
     const rol = document.getElementById('rolUsuario').value;
+    const sector = document.getElementById('sectorUsuario').value;
     const contraseña = document.getElementById('contraseñaUsuario').value;
 
-    if (!nombre || !rol || !contraseña) {
+    if (!nombre || !rol || !sector || !contraseña) {
         alert('Por favor, complete todos los campos obligatorios.');
+        return;
+    }
+
+     // Validar longitud de la contraseña
+     if (contraseña.length < 3) {
+        alert('La contraseña debe tener al menos 6 caracteres.');
+        return;
+    }
+    const rolesPermitidos = ['Empleado', 'Administrador'];
+    if (!rolesPermitidos.includes(rol)) {
+        alert('Rol inválido. Por favor, seleccione un rol válido.');
         return;
     }
 
@@ -876,7 +859,7 @@ const loadAdminProductionData = async () => {
         const response = await fetch('/api/admin/usuarios', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nombre, rol, contraseña }),
+            body: JSON.stringify({ nombre, rol, sector, contraseña }),
         });
 
         if (!response.ok) {

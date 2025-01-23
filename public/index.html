@@ -185,13 +185,13 @@
     <!-- Gráfico de barras de ingresos -->
     <div>
         <h3>Ingresos por Semana (por Sector)</h3>
-        <canvas id="weeklyRevenueChart" style="max-width: 600px;"></canvas>
+        <canvas id="weeklyRevenueChart" style="max-width: 100px;"></canvas>
     </div>
 
     <!-- Gráfico de tortas del rendimiento -->
     <div>
         <h3>Producido vs Vendido</h3>
-        <canvas id="productionSalesChart" style="max-width: 600px;"></canvas>
+        <canvas id="productionSalesChart" style="max-width: 100px;"></canvas>
     </div>
 </section>
         <!-- Tabla de Producción -->
@@ -289,7 +289,7 @@
             <thead>
                 <tr>
                     <th>Nombre</th>
-                    <th>Sector</th> <!--Editar en db y en scripts.js-->
+                    <th>Sector</th> 
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -308,8 +308,16 @@
                         <input type="text" id="nombreUsuario" required>
                         <label for="rolUsuario">Rol:</label>
                         <select id="rolUsuario" required>
-                            <option value="empleado">Empleado</option>
-                            <option value="dueño">Administrador</option>
+                            <option value="Empleado">Empleado</option>
+                            <option value="Administrador">Administrador</option>
+                        </select>
+                        <label for="sectorUsuario">Sector:</label>
+                        <select id="sectorUsuario" name="sectorUsuario" required>
+                            <option value="">Seleccionar sector</option>
+                            <option value="Kiosko">Kiosko</option>
+                            <option value="Cantina">Cantina</option>
+                            <option value="Congelados">Congelados</option>
+                            <option value="Parrilla">Parrilla</option>
                         </select>
                         <label for="contraseñaUsuario">Contraseña:</label>
                         <input type="password" id="contraseñaUsuario" required>
